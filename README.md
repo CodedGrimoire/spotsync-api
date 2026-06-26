@@ -30,6 +30,8 @@ DATABASE_URL=your_neon_postgresql_connection_string
 JWT_SECRET=your_jwt_secret
 ```
 
+Never commit your real `.env` file. Keep `DATABASE_URL` and `JWT_SECRET` secret.
+
 ## Local Setup
 
 ```bash
@@ -195,6 +197,58 @@ curl "$BASE_URL/api/v1/reservations" \
 ## Concurrency Note
 
 Reservation creation uses a GORM transaction and row-level lock with `FOR UPDATE` on the `parking_zones` row before checking active reservation count and creating the reservation. This prevents overbooking when multiple users try to reserve the last spot at the same time.
+
+## Deployment
+
+### Render
+
+1. Push code to GitHub.
+2. Create a new Web Service on Render.
+3. Connect GitHub repo.
+4. Build command:
+
+```bash
+go build -o app .
+```
+
+5. Start command:
+
+```bash
+./app
+```
+
+6. Add environment variables:
+
+```env
+PORT=8080
+DATABASE_URL=<your NeonDB connection string>
+JWT_SECRET=<your long random secret>
+```
+
+7. Deploy.
+8. Test:
+
+```bash
+curl https://your-app-name.onrender.com/health
+```
+
+### Railway
+
+1. Create a new Railway project.
+2. Deploy from GitHub repo.
+3. Add environment variables:
+
+```env
+DATABASE_URL=<your NeonDB connection string>
+JWT_SECRET=<your long random secret>
+```
+
+4. Railway may provide `PORT` automatically. The app must read `PORT` from environment.
+5. Test:
+
+```bash
+curl https://your-railway-domain/health
+```
 
 ## Submission
 
