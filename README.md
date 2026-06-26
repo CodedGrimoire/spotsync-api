@@ -2,10 +2,9 @@
 
 ## Live Links
 
-- GitHub Repository:   https://github.com/CodedGrimoire/spotsync-api
-
-- Live Deployment: (https://spotsync-api-7vn1.onrender.com/)
-- Interview Video: (https://drive.google.com/drive/folders/1F8RXZiVEiiGrZRTr3qnE9o48nfN-81VL?usp=sharing)
+- GitHub Repository: https://github.com/CodedGrimoire/spotsync-api
+- Live Deployment: https://spotsync-api-7vn1.onrender.com/
+- Interview Video: https://drive.google.com/drive/folders/1F8RXZiVEiiGrZRTr3qnE9o48nfN-81VL?usp=sharing
 
 ## Overview
 
@@ -37,6 +36,21 @@ SpotSync is a clean architecture Go backend API for managing parking zones and E
 - godotenv
 
 ## Clean Architecture
+
+SpotSync separates HTTP, business logic, and database access into clear layers. Requests flow through the application like this:
+
+```text
+Client
+  -> Echo Router
+  -> Middleware
+  -> Handler
+  -> Service
+  -> Repository
+  -> GORM Models
+  -> PostgreSQL / NeonDB
+```
+
+Responses flow back in the reverse direction. Handlers never call GORM directly, repositories never return HTTP responses, and services contain the main business rules.
 
 - `dto`: Request and response objects used at the API boundary.
 - `handler`: HTTP request handling, request binding, validation, service calls, and JSON responses.
