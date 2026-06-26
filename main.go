@@ -6,6 +6,7 @@ import (
 
 	"spotsync-api/config"
 	"spotsync-api/models"
+	"spotsync-api/routes"
 	"spotsync-api/utils"
 
 	"github.com/go-playground/validator/v10"
@@ -31,6 +32,7 @@ func main() {
 
 	e := echo.New()
 	e.Validator = &utils.CustomValidator{Validator: validator.New()}
+	routes.RegisterRoutes(e, db)
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
