@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"spotsync-api/dto"
@@ -60,7 +61,9 @@ func (s *authService) Register(req dto.RegisterRequest) (*dto.UserResponse, erro
 		Role:     role,
 	}
 
-	if err := s.userRepo.Create(user); err != nil {
+	if err := s.userRepo.Create(user); isDuplicateEmailError(err) {
+		return nil, ErrEmailAlreadyExists
+	} else if err != nil {
 		return nil, err
 	}
 
@@ -108,4 +111,14 @@ func toUserResponse(user *models.User) dto.UserResponse {
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}
+}
+
+func isDuplicateEmailError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	errMessage := strings.ToLower(err.Error())
+
+	return strings.Contains(errMessage, "duplicate key") || strings.Contains(errMessage, "unique constraint")
 }
