@@ -198,6 +198,23 @@ curl "$BASE_URL/api/v1/reservations" \
 
 Reservation creation uses a GORM transaction and row-level lock with `FOR UPDATE` on the `parking_zones` row before checking active reservation count and creating the reservation. This prevents overbooking when multiple users try to reserve the last spot at the same time.
 
+## Final Testing
+
+Run the end-to-end API verification script:
+
+```bash
+chmod +x scripts/test_api.sh
+./scripts/test_api.sh
+```
+
+For a deployed URL:
+
+```bash
+BASE_URL=https://your-app.onrender.com ./scripts/test_api.sh
+```
+
+Use [docs/FINAL_CHECKLIST.md](docs/FINAL_CHECKLIST.md) before submission to verify code quality, auth, parking zones, reservations, deployment, and submission requirements.
+
 ## Deployment
 
 ### Render
