@@ -1,6 +1,28 @@
 # SpotSync - Smart Parking & EV Charging Reservation API
 
-A clean architecture Go backend for managing parking zones and EV charging reservations with JWT authentication, role-based authorization, and concurrency-safe reservation creation.
+## Live Links
+
+- GitHub Repository: TODO
+- Live Deployment: TODO
+- Interview Video: TODO
+
+## Overview
+
+SpotSync is a clean architecture Go backend API for managing parking zones and EV charging reservations in busy locations such as airports and malls. It supports JWT authentication, role-based authorization, dynamic parking availability calculation, and concurrency-safe reservation creation.
+
+## Features
+
+- User registration and login
+- JWT authentication
+- Role-based access: driver and admin
+- Admin parking zone management
+- Public parking zone browsing
+- Dynamic available spot calculation
+- Authenticated reservation creation
+- My reservations view
+- Reservation cancellation
+- Admin view of all reservations
+- Concurrency-safe reservation creation using transaction and row-level locking
 
 ## Tech Stack
 
@@ -10,31 +32,36 @@ A clean architecture Go backend for managing parking zones and EV charging reser
 - PostgreSQL / NeonDB
 - JWT
 - bcrypt
-- Validator
+- go-playground/validator
+- godotenv
 
-## Architecture
+## Clean Architecture
 
 - `dto`: Request and response objects used at the API boundary.
-- `handler`: HTTP request handling, binding, validation, and response formatting.
-- `service`: Business logic, authorization rules, password hashing, token generation, and DTO mapping.
-- `repository`: Database access, GORM queries, transactions, preloads, and row locks.
-- `models`: GORM database models.
-- `middleware`: JWT authentication and role protection.
-- `config`: Database connection setup.
+- `handler`: HTTP request handling, request binding, validation, service calls, and JSON responses.
+- `service`: Business logic such as auth rules, role checks, reservation rules, password hashing, JWT generation, and DTO mapping.
+- `repository`: Database access only, including GORM queries, transactions, preloads, and row locks.
+- `models`: GORM database models for users, parking zones, and reservations.
+- `middleware`: JWT authentication and role-based route protection.
+- `config`: Database connection and connection pool setup.
+- `utils`: Shared helpers such as standard JSON responses and validation setup.
+- `routes`: Route registration and dependency wiring.
 
 ## Environment Variables
 
 ```env
 PORT=8080
-DATABASE_URL=your_neon_postgresql_connection_string
-JWT_SECRET=your_jwt_secret
+DATABASE_URL=postgresql://username:password@host/database?sslmode=require
+JWT_SECRET=replace_with_long_random_secret
 ```
 
-Never commit your real `.env` file. Keep `DATABASE_URL` and `JWT_SECRET` secret.
+Do not commit real `.env` values. Keep `DATABASE_URL` and `JWT_SECRET` secret.
 
 ## Local Setup
 
 ```bash
+git clone <your-repository-url>
+cd spotsync-api
 go mod tidy
 go run main.go
 ```
@@ -73,132 +100,7 @@ DELETE /api/v1/reservations/:id              authenticated
 GET /api/v1/reservations                     admin only
 ```
 
-## Curl Testing Commands
-
-Set the base URL:
-
-```bash
-BASE_URL=http://localhost:8080
-```
-
-1. Register admin
-
-```bash
-curl -X POST "$BASE_URL/api/v1/auth/register" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Admin User",
-    "email": "admin@spotsync.test",
-    "password": "password123",
-    "role": "admin"
-  }'
-```
-
-2. Login admin
-
-```bash
-curl -X POST "$BASE_URL/api/v1/auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@spotsync.test",
-    "password": "password123"
-  }'
-```
-
-Save the token:
-
-```bash
-ADMIN_TOKEN=replace_with_admin_token
-```
-
-3. Create zone with admin token
-
-```bash
-curl -X POST "$BASE_URL/api/v1/zones" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -d '{
-    "name": "Central Parking",
-    "type": "ev_charging",
-    "total_capacity": 10,
-    "price_per_hour": 5.50
-  }'
-```
-
-4. Get all zones
-
-```bash
-curl "$BASE_URL/api/v1/zones"
-```
-
-5. Register driver
-
-```bash
-curl -X POST "$BASE_URL/api/v1/auth/register" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Driver User",
-    "email": "driver@spotsync.test",
-    "password": "password123",
-    "role": "driver"
-  }'
-```
-
-6. Login driver
-
-```bash
-curl -X POST "$BASE_URL/api/v1/auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "driver@spotsync.test",
-    "password": "password123"
-  }'
-```
-
-Save the token:
-
-```bash
-DRIVER_TOKEN=replace_with_driver_token
-```
-
-7. Create reservation
-
-```bash
-curl -X POST "$BASE_URL/api/v1/reservations" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $DRIVER_TOKEN" \
-  -d '{
-    "zone_id": 1,
-    "license_plate": "DHK-1234"
-  }'
-```
-
-8. Get my reservations
-
-```bash
-curl "$BASE_URL/api/v1/reservations/my-reservations" \
-  -H "Authorization: Bearer $DRIVER_TOKEN"
-```
-
-9. Cancel reservation
-
-```bash
-curl -X DELETE "$BASE_URL/api/v1/reservations/1" \
-  -H "Authorization: Bearer $DRIVER_TOKEN"
-```
-
-10. Admin get all reservations
-
-```bash
-curl "$BASE_URL/api/v1/reservations" \
-  -H "Authorization: Bearer $ADMIN_TOKEN"
-```
-
-## Concurrency Note
-
-Reservation creation uses a GORM transaction and row-level lock with `FOR UPDATE` on the `parking_zones` row before checking active reservation count and creating the reservation. This prevents overbooking when multiple users try to reserve the last spot at the same time.
-
-## Final Testing
+## Testing
 
 Run the end-to-end API verification script:
 
@@ -210,10 +112,14 @@ chmod +x scripts/test_api.sh
 For a deployed URL:
 
 ```bash
-BASE_URL=https://your-app.onrender.com ./scripts/test_api.sh
+BASE_URL=https://your-deployed-url ./scripts/test_api.sh
 ```
 
 Use [docs/FINAL_CHECKLIST.md](docs/FINAL_CHECKLIST.md) before submission to verify code quality, auth, parking zones, reservations, deployment, and submission requirements.
+
+## Concurrency Safety
+
+Reservation creation uses a GORM transaction. Inside the transaction, the selected `parking_zones` row is locked with `FOR UPDATE` before counting active reservations and creating a new reservation. This prevents two simultaneous requests from both reserving the final available spot.
 
 ## Deployment
 
@@ -221,7 +127,7 @@ Use [docs/FINAL_CHECKLIST.md](docs/FINAL_CHECKLIST.md) before submission to veri
 
 1. Push code to GitHub.
 2. Create a new Web Service on Render.
-3. Connect GitHub repo.
+3. Connect the GitHub repo.
 4. Build command:
 
 ```bash
@@ -234,7 +140,7 @@ go build -o app .
 ./app
 ```
 
-6. Add environment variables:
+6. Add required environment variables:
 
 ```env
 PORT=8080
@@ -252,25 +158,25 @@ curl https://your-app-name.onrender.com/health
 ### Railway
 
 1. Create a new Railway project.
-2. Deploy from GitHub repo.
-3. Add environment variables:
+2. Deploy from the GitHub repo.
+3. Add required environment variables:
 
 ```env
 DATABASE_URL=<your NeonDB connection string>
 JWT_SECRET=<your long random secret>
 ```
 
-4. Railway may provide `PORT` automatically. The app must read `PORT` from environment.
+4. Railway may provide `PORT` automatically. The app reads `PORT` from the environment.
 5. Test:
 
 ```bash
 curl https://your-railway-domain/health
 ```
 
-## Submission
+## Submission Checklist
 
-GitHub Repo:
-
-Live Deployment:
-
-Interview Video:
+- [ ] Public GitHub repo
+- [ ] Live deployment URL
+- [ ] Interview video URL
+- [ ] At least 10 meaningful commits
+- [ ] `.env` not committed

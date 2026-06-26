@@ -45,6 +45,9 @@
 
 ## Submission
 
+- [ ] README completed
+- [ ] Interview notes prepared
+- [ ] Deployment instructions added
 - [ ] Public GitHub repo link
 - [ ] Live deployment link
 - [ ] Interview video link
