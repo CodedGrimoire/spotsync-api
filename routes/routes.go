@@ -33,6 +33,9 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	zoneRepo := repository.NewZoneRepository(db)
 	zoneService := service.NewZoneService(zoneRepo)
 	zoneHandler := handler.NewZoneHandler(zoneService)
+	reservationRepo := repository.NewReservationRepository(db)
+	reservationService := service.NewReservationService(reservationRepo)
+	reservationHandler := handler.NewReservationHandler(reservationService)
 
 	auth.POST("/register", authHandler.Register)
 	auth.POST("/login", authHandler.Login)
@@ -43,4 +46,10 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	admin.POST("/zones", zoneHandler.CreateZone)
 	admin.PUT("/zones/:id", zoneHandler.UpdateZone)
 	admin.DELETE("/zones/:id", zoneHandler.DeleteZone)
+
+	protected.POST("/reservations", reservationHandler.CreateReservation)
+	protected.GET("/reservations/my-reservations", reservationHandler.GetMyReservations)
+	protected.DELETE("/reservations/:id", reservationHandler.CancelReservation)
+
+	admin.GET("/reservations", reservationHandler.GetAllReservations)
 }
