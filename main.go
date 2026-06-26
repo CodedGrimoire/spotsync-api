@@ -5,8 +5,11 @@ import (
 	"os"
 
 	"spotsync-api/config"
+	"spotsync-api/handler"
 	"spotsync-api/models"
+	"spotsync-api/repository"
 	"spotsync-api/routes"
+	"spotsync-api/service"
 	"spotsync-api/utils"
 
 	"github.com/go-playground/validator/v10"
@@ -32,7 +35,25 @@ func main() {
 
 	e := echo.New()
 	e.Validator = &utils.CustomValidator{Validator: validator.New()}
-	routes.RegisterRoutes(e, db)
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET is required")
+	}
+
+	userRepo := repository.NewUserRepository(db)
+	authService := service.NewAuthService(userRepo, jwtSecret)
+	authHandler := handler.NewAuthHandler(authService)
+
+	zoneRepo := repository.NewZoneRepository(db)
+	zoneService := service.NewZoneService(zoneRepo)
+	zoneHandler := handler.NewZoneHandler(zoneService)
+
+	reservationRepo := repository.NewReservationRepository(db)
+	reservationService := service.NewReservationService(reservationRepo)
+	reservationHandler := handler.NewReservationHandler(reservationService)
+
+	routes.RegisterRoutes(e, authHandler, zoneHandler, reservationHandler)
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
