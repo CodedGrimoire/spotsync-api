@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"spotsync-api/handler"
+	appMiddleware "spotsync-api/middleware"
 	"spotsync-api/repository"
 	"spotsync-api/service"
 
@@ -15,6 +16,11 @@ import (
 func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	api := e.Group("/api/v1")
 	auth := api.Group("/auth")
+	protected := api.Group("")
+	protected.Use(appMiddleware.JWTMiddleware())
+	admin := api.Group("")
+	admin.Use(appMiddleware.JWTMiddleware())
+	admin.Use(appMiddleware.RequireRole("admin"))
 
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
