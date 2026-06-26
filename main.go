@@ -34,6 +34,7 @@ func main() {
 	}
 
 	e := echo.New()
+	e.HTTPErrorHandler = utils.HTTPErrorHandler
 	e.Validator = &utils.CustomValidator{Validator: validator.New()}
 
 	jwtSecret := os.Getenv("JWT_SECRET")
