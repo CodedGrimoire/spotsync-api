@@ -2,9 +2,10 @@
 
 ## Live Links
 
-- GitHub Repository: TODO
-- Live Deployment: TODO
-- Interview Video: TODO
+- GitHub Repository:   https://github.com/CodedGrimoire/spotsync-api
+
+- Live Deployment: (https://spotsync-api-7vn1.onrender.com/)
+- Interview Video: (https://drive.google.com/drive/folders/1F8RXZiVEiiGrZRTr3qnE9o48nfN-81VL?usp=sharing)
 
 ## Overview
 
