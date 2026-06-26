@@ -7,4 +7,6 @@ var (
 	ErrInvalidCredentials = errors.New("invalid email or password")
 	ErrInvalidRole        = errors.New("invalid role")
 	ErrUserNotFound       = errors.New("user not found")
+	ErrZoneNotFound       = errors.New("parking zone not found")
+	ErrInvalidZoneType    = errors.New("invalid zone type")
 )
